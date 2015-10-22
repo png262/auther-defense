@@ -14,16 +14,15 @@ router.get('/callback', passport.authenticate('github', {
 }));
 
 passport.use(new GitHubStrategy({
-	clientID: '72a182c40da4e238c343',
-	clientSecret: '8a304df5344895b8e2fcd19894bd20ab2cb3d68a',
+	clientID: 'd5d375115fbe0eec5b12',
+	clientSecret: '08348dbe90827dd5fce0e0b59a3a5b29f19d408c',
 	callbackURL: 'http://127.0.0.1:8080/auth/github/callback'
 }, function (token, refreshToken, profile, done) { 
 	User.findOne({'github.id': profile.id }, function (err, user) {
 		if (err) done(err);
 		else if (user) done(null, user);
 		else {
-			var email = profile.emails ? profile.emails[0].value : (profile.displayName.replace(/\s+/g, '_') + '@fake-auther-email.com');
-			var email = profile.emails[0].value;
+			var email = profile.emails ? profile.emails[0].value : ('fakeuser' + '@fake-auther-email.com');
 			User.create({
 				email: email,
 				name: profile.displayName,
