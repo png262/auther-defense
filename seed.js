@@ -8,6 +8,15 @@ var db = require('./server/db');
 var User = require('./server/api/users/user.model');
 var Story = require('./server/api/stories/story.model');
 
+var crypto = require('crypto');
+var buffer;
+
+var iterations = 1;
+var bytes = 64;
+var hash;
+
+
+
 var numUsers = 100;
 var numStories = 500;
 
@@ -23,13 +32,19 @@ function randPhoto () {
 }
 
 function randUser () {
+	var salt = crypto.randomBytes(16).toString("base64");
+	buffer = crypto.pbkdf2Sync(chance.word(), salt, iterations, bytes);
+	hash = buffer.toString('base64');
+
 	return new User({
+
 		name: [chance.first(), chance.last()].join(' '),
 		photo: randPhoto(),
 		phone: chance.phone(),
 		email: emails.pop(),
-		password: chance.word(),
-		isAdmin: chance.weighted([true, false], [5, 95])
+		password: hash,
+		isAdmin: chance.weighted([true, false], [5, 95]),
+		salt: salt
 	});
 }
 

@@ -1,10 +1,11 @@
 'use strict';
-
+var isAdmin;
 var router = require('express').Router(),
 	_ = require('lodash');
 
 var HttpError = require('../../utils/HttpError');
 var Story = require('./story.model');
+var User = require('../users/user.model');
 
 router.param('id', function (req, res, next, id) {
 	Story.findById(id).exec()
@@ -17,6 +18,8 @@ router.param('id', function (req, res, next, id) {
 });
 
 router.get('/', function (req, res, next) {
+	console.log("req user", req.user);
+	console.log("req session", req.session)
 	Story.find({}).populate('author').exec()
 	.then(function (storys) {
 		res.json(storys);
@@ -45,19 +48,47 @@ router.get('/:id', function (req, res, next) {
 
 router.put('/:id', function (req, res, next) {
 	_.extend(req.story, req.body);
-	req.story.save()
-	.then(function (story) {
-		res.json(story);
+
+
+	User.findById(req.session.passport.user)
+	.then(function(response) {
+	
+		isAdmin = response.isAdmin;
+	
+
+		if((req.story.author === req.session.passport.user) || isAdmin) {
+			console.log("got into SAVE")
+		req.story.save()
+		.then(function (story) {
+			res.json(story);
+			})
+		.then(null, next);
+		}
+		else
+			res.status(401).send("unauthoriszed access")
 	})
-	.then(null, next);
+
+	
+	
 });
 
 router.delete('/:id', function (req, res, next) {
+	User.findById(req.session.passport.user)
+	.then(function(response) {
+	
+		isAdmin = response.isAdmin;
+
+	if((req.story.author === req.session.passport.user) || isAdmin) {
 	req.story.remove()
 	.then(function () {
 		res.status(204).end();
 	})
 	.then(null, next);
+	}
+	else
+res.status(401).send("unauthoriszed access")
 });
+});
+
 
 module.exports = router;

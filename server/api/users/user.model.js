@@ -46,7 +46,8 @@ var User = new mongoose.Schema({
 	isAdmin: {
 		type: Boolean,
 		default: false
-	}
+	},
+	salt: String
 });
 
 User.methods.getStories = function () {
